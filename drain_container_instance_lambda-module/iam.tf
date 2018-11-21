@@ -18,56 +18,27 @@ resource "aws_iam_role" "iam_role_for_draining_container_instance_lambda" {
 EOF
 }
 
-resource "aws_iam_role_policy" "iam_policy_for_draining_container_instance_lambda" {
-  name = "iam-policy-for-draining-container-instance-lambda-${var.env}"
+resource "aws_iam_role_policy_attachment" "logs_full_access" {
   role = "${aws_iam_role.iam_role_for_draining_container_instance_lambda.id}"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-         "logs:CreateLogGroup",
-         "logs:CreateLogStream",
-         "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-          "autoscaling:*"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-          "ec/*"
-      ],
-      "Resource": "*"
-    },
-    {
-        "Effect": "Allow",
-        "Action": [
-            "sqs:DeleteMessage",
-            "sqs:ReceiveMessage",
-            "sqs:SendMessage",
-            "sqs:GetQueueAttributes",
-            "sqs:GetQueueUrl"
-        ],
-        "Resource": "arn:aws:sqs:*"
-    },
-    {
-        "Effect": "Allow",
-        "Action": [
-            "lambda:InvokeFunction"
-        ],
-        "Resource": "*"
-    }
-  ]
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 }
-EOF
+
+resource "aws_iam_role_policy_attachment" "auto-scaling-access" {
+  role = "${aws_iam_role.iam_role_for_draining_container_instance_lambda.id}"
+  policy_arn = "arn:aws:iam::aws:policy/AutoScalingFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "ec2-access" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+  role = "${aws_iam_role.iam_role_for_draining_container_instance_lambda.id}"
+}
+
+resource "aws_iam_role_policy_attachment" "sqs-access" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
+  role = "${aws_iam_role.iam_role_for_draining_container_instance_lambda.id}"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda-default-policy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+  role = "${aws_iam_role.iam_role_for_draining_container_instance_lambda.id}"
 }
