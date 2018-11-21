@@ -14,7 +14,7 @@ pipeline {
                         rm -rf .pytest_cache
                         rm -rf venv
                         virtualenv venv
-                        source venv/bin/activate
+                        . venv/bin/activate
                         pip install -r requirement.txt
                         pytest -vv
                         deactivate
