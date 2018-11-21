@@ -44,14 +44,16 @@ pipeline {
         }
         stage("terraform-plan-apply") {
             steps {
-                wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'xterm']) {
-                    sh """
-                        TF_IN_AUTOMATION=true 
-                        terraform get -update=true
-                        terraform init -input=false
-                        terraform plan -input=false -out=terraform.tfplan
-                        terraform apply -input=false terraform.tfplan
-                    """
+                dir("${TERRAFORM_DIR}") {
+                    wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'xterm']) {
+                        sh """
+                            TF_IN_AUTOMATION=true 
+                            terraform get -update=true
+                            terraform init -input=false
+                            terraform plan -input=false -out=terraform.tfplan
+                            terraform apply -input=false terraform.tfplan
+                        """
+                    }
                 }
             }
         }
