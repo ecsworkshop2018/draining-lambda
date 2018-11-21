@@ -15,7 +15,7 @@ pipeline {
                         rm -rf venv
                         virtualenv venv
                         . venv/bin/activate
-                        pip install -r requirement.txt
+                        pip install -r requirements.txt
                         pytest -vv
                         deactivate
                         rm -rf venv
