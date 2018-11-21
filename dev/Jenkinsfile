@@ -1,0 +1,32 @@
+pipeline {
+    agent none
+
+    environment {
+        LAMBDA_SRC_DIR = "function"
+        LAMBDA_VERSION = "master" // a git tag can be specified here.
+    }
+
+    stages {
+        stage("lambda-unit-test") {
+            agent { label 'master' }
+            steps {
+                dir("${LAMBDA_SRC_DIR}") {
+                    executeWithVirtualEnv("pytest -vv")
+                }
+            }
+        }
+    }
+}
+
+def executeWithVirtualEnv(commandBlock) {
+    sh """
+        rm -rf .pytest_cache
+        rm -rf venv
+        virtualenv venv
+        . venv/bin/activate
+        pip install -r requirements.txt
+        ${commandBlock}
+        deactivate
+        rm -rf venv
+    """
+}
