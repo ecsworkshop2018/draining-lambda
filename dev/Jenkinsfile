@@ -1,18 +1,50 @@
 pipeline {
-    agent none
+    agent { label 'master' }
 
     environment {
+        TERRAFORM_DIR = "dev"
         LAMBDA_SRC_DIR = "function"
         LAMBDA_VERSION = "master" // a git tag can be specified here.
+        PACKAGED_LAMBDA_ZIP_NAME="drain_ecs_cluster_container_instances_lambda.zip"
+        LAMBDA_GIT_REPO="git@github.com:ecsworkshop2018/draining-lambda.git"
     }
 
     stages {
         stage("lambda-unit-test") {
-            agent { label 'master' }
             steps {
                 dir("${LAMBDA_SRC_DIR}") {
                     executeWithVirtualEnv("pytest -vv")
                 }
+            }
+        }
+        stage("package-lambda") {
+            steps {
+                dir("${TERRAFORM_DIR}") {
+                    sh "rm -rf dist"
+                    dir("dist") {
+                        git "$LAMBDA_GIT_REPO"
+                        sh "git checkout $LAMBDA_VERSION"
+                        dir("${LAMBDA_SRC_DIR}") {
+                            sh """
+                                rm -rf venv
+                                virtualenv venv
+                                . venv/bin/activate
+                                pip install -r requirements.txt
+                                deactivate
+                            """
+                        }
+                    }
+                    sh """
+                            CURRENT_DIRECTORY="\$(pwd)"
+                            (cd dist/$LAMBDA_SRC_DIR/main/ && zip -rq9 \${CURRENT_DIRECTORY}/$PACKAGED_LAMBDA_ZIP_NAME .)
+                            (cd dist/$LAMBDA_SRC_DIR/venv/lib/python3.5/site-packages/ && zip -rq9 \${CURRENT_DIRECTORY}/$PACKAGED_LAMBDA_ZIP_NAME .)                           
+                        """
+                }
+            }
+        }
+        stage("check-zip-exists") {
+            steps {
+                sh "ls -l"
             }
         }
     }

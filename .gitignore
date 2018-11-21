@@ -147,3 +147,6 @@ Try running `joe ls` to see list of available gitignore files.
 pyvenv.cfg
 pip-selfcheck.json
 
+*.terraform
+drain_ecs_cluster_container_instances_lambda.zip
+tf_plan
