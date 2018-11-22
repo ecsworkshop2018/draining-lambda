@@ -42,3 +42,8 @@ resource "aws_iam_role_policy_attachment" "lambda-default-policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
   role = "${aws_iam_role.iam_role_for_draining_container_instance_lambda.id}"
 }
+
+resource "aws_iam_role_policy_attachment" "ecs_full_access" {
+  role = "${aws_iam_role.iam_role_for_draining_container_instance_lambda.id}"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+}
